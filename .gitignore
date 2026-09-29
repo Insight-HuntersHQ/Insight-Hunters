@@ -216,3 +216,33 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Insight Hunters - Project Specifics
+
+# Raw and processed datasets
+01_Datasets/
+02_Data_Splits/
+
+# Medical image files
+*.png
+*.jpg
+*.jpeg
+*.dcm
+
+# Model checkpoints and trained models
+03_Model_Checkpoints/
+*.keras
+*.h5
+*.hdf5
+*.ckpt
+
+# Final model exports
+05_Exports/
+
+# Google Drive / Colab temporary files
+.Trash-*
+.ipynb_checkpoints/
+
+# Operating system files
+.DS_Store
+Thumbs.db
