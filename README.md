@@ -1,6 +1,8 @@
 # Insight Hunters
 
-Deep learning project for chest X-ray analysis using the NIH Chest X-ray, Shenzhen and Montgomery datasets.
+Third-year Eduvos research project investigating TB classification, medical-domain transfer learning, Grad-CAM explainability and image-content validation using NIH ChestX-ray14, Shenzhen and Montgomery chest radiographs.
+
+> **Research prototype only:** Not clinically validated; do not use for diagnosis or treatment decisions.
 
 ## Project Overview
 
@@ -8,7 +10,7 @@ This project investigates the application of deep learning techniques to chest X
 
 The project is being developed as a third-year group project by the Insight Hunters team.
 
-The dataset exploration and preparation phase includes dataset structure and statistical analysis, data quality assessment, dataset splitting, preprocessing and the development of a reproducible input pipeline for later model training and evaluation.
+The project has completed dataset preparation, four-architecture CNN comparison, NIH-based ResNet50 pretraining, Grad-CAM explainability, MobileNetV2 image validation and controlled backend integration tests. Streamlit end-to-end integration and debugging remain ongoing.
 
 ---
 
@@ -22,7 +24,7 @@ Three chest X-ray datasets are used within the project.
 - Image format: PNG
 - Image dimensions: 1024 × 1024
 - Number of diagnostic categories: 15
-- Used for broader chest X-ray analysis and dataset exploration
+- Used for dataset exploration **and 14-label medical-domain pretraining of ResNet50** before TB fine-tuning
 
 ### Shenzhen Hospital Dataset
 
@@ -153,7 +155,7 @@ Data augmentation will be applied to the **training data only** during the model
 
 ## Repository Structure
 
-The GitHub repository contains the code and reproducibility material required for the project.
+The repository originally contained the following files. Confirm the current `notebooks/` contents before adding further experiments or application code.
 
 ```text
 Insight-Hunters/
@@ -252,7 +254,7 @@ The notebook includes:
 - Dataset prefetching
 - Dependency verification
 
-This notebook represents the final stage of the current dataset exploration and preparation pipeline.
+This notebook completed the initial dataset exploration and preparation phase; subsequent model development and integration were documented separately.
 
 ---
 
@@ -344,39 +346,66 @@ These exclusions help prevent large medical-image datasets and generated model f
 
 ---
 
-## Project Status
+## Model Development and Evaluation
 
-### Dataset Exploration and Preparation
+Four CNN architectures were evaluated on the held-out TB test set (120 images). These are the **initial ImageNet-based model comparison** results:
 
-- [x] Dataset structure and statistical analysis
-- [x] Class-distribution analysis
-- [x] Image-property analysis
-- [x] Data quality and integrity checking
-- [x] Exact duplicate checking
-- [x] Visual data inspection
-- [x] Stratified dataset splitting
-- [x] Split verification
-- [x] Physical split verification
-- [x] TensorFlow dataset loading
-- [x] Input-pipeline verification
-- [x] Shared project storage structure
-- [x] Notebook organisation
-- [x] Dependency configuration
-- [x] GitHub repository setup
+| Architecture | Accuracy | Sensitivity | Specificity | ROC-AUC |
+|---|---:|---:|---:|---:|
+| VGG16 | 83.33% | 71.19% | 95.08% | 92.41% |
+| **ResNet50** | **87.50%** | 79.66% | **95.08%** | **93.64%** |
+| DenseNet121 | 82.50% | 74.58% | 90.16% | 92.28% |
+| EfficientNetB0 | 74.17% | 79.66% | 68.85% | 86.30% |
 
-### Model Development and Evaluation
+ResNet50 was selected for further experimentation. NIH domain-specific pretraining was then used to investigate whether additional chest X-ray experience improved TB classification.
 
-- [ ] Data augmentation
-- [ ] Baseline model development
-- [ ] Transfer-learning model comparison
-- [ ] VGG16 development
-- [ ] Model training
-- [ ] Fine-tuning
-- [ ] Performance evaluation
-- [ ] Confusion-matrix analysis
-- [ ] Model comparison
-- [ ] Final model selection
-- [ ] Final model export
+### NIH Data Engineering and TFRecords
+
+NIH ChestX-ray14 comprises 112,120 images and created substantial storage and data-loading challenges. The team developed a TFRecord pipeline and staged 86,524 training/validation images locally in Colab (approximately 32.45 GB; approximately 132.9 minutes to transfer in the recorded run). An initial Google Drive benchmark measured approximately **12.28 seconds/batch**; a subsequent local-storage benchmark measured approximately **0.37 seconds/batch** over ten batches. These different benchmarks do not isolate the effect of TFRecords alone.
+
+NIH splits were **73,916 training**, **12,608 validation** and **25,596 reserved test** images. Recorded checks found no patient or image overlap across the NIH partitions. NIH pretraining predicted 14 thoracic disease labels; this was **not direct TB training**.
+
+### Final NIH-Pretrained ResNet50
+
+| Metric | ImageNet → TB | NIH → TB (selected) |
+|---|---:|---:|
+| Accuracy | 87.50% | **87.50%** |
+| Sensitivity | 79.66% | **83.05%** |
+| Specificity | **95.08%** | 91.80% |
+| ROC-AUC | 93.64% | **93.89%** |
+
+The NIH-pretrained model was selected for its higher sensitivity, despite lower specificity and unchanged accuracy. Its held-out confusion matrix was **TN=56, FP=5, FN=10, TP=49**. The experiments do not establish a statistically significant advantage for NIH pretraining.
+
+### Grad-CAM Explainability
+
+Grad-CAM heatmaps use the selected ResNet50's `conv5_block3_out` layer (7×7 spatial map), resized and overlaid on chest radiographs. These visualizations show influential image regions but do not verify pathology or clinical correctness.
+
+### MobileNetV2 Image Validator
+
+A separate model screens uploads before TB classification to reduce misleading predictions for non-chest images. It was trained using **560 chest X-rays and 630 non-chest photographs**, validated on **120 chest and 134 non-chest images**, and tested on **120 chest and 134 non-chest images**. The original held-out test produced **254/254 correct decisions**. Additional exploratory checks correctly handled 100 pet photos, 20 abdominal CT images, 21 hand X-rays, 30 NIH chest radiographs, and grayscale conversions of the same 100 pet photos. These limited samples do not guarantee generalization.
+
+The validator outputs a non-chest score: **below 0.5 accepts**, while **0.5 or above rejects**. The score is not a clinically calibrated probability.
+
+### Backend and Application Integration
+
+The unified `tb_model_inference.py` module provides `run_complete_inference(tb_model, validator_model, image_input)` and returns `accepted`, `rejected` or `error`. Only accepted images receive TB classification and Grad-CAM through this validated entry point. Controlled Colab tests covered chest X-rays, hand radiographs, invalid bytes and Streamlit-style uploaded files. **Actual Streamlit integration is still being debugged:** an apparent chest X-ray rejection and a non-chest-image prediction screenshot require investigation. Do not describe the full application as validated.
+
+## Project Status — October 2026
+
+- [x] Dataset exploration, integrity checks, splitting and preprocessing
+- [x] VGG16, ResNet50, DenseNet121 and EfficientNetB0 comparison
+- [x] NIH storage benchmarking, local staging and TFRecord work
+- [x] NIH-to-TB ResNet50 transfer learning and held-out evaluation
+- [x] Grad-CAM implementation
+- [x] MobileNetV2 image validator and exploratory robustness testing
+- [x] Unified backend and controlled integration testing
+- [ ] Complete Streamlit integration and resolve upload/validation issues
+- [ ] Final end-to-end application testing
+- [ ] Final demonstration and oral presentation (20 November 2026)
+
+## Limitations
+
+The TB dataset contains only 800 images and the held-out test contains only 120. The selected model missed 10 TB-positive cases in testing. Differences among data sources, limited validator image diversity, and lack of external clinical validation constrain generalizability. Grad-CAM is not a medical explanation. The prototype must not be used for clinical diagnosis.
 
 ---
 
@@ -397,6 +426,4 @@ Third-year group deep learning project.
 
 ## Current Phase
 
-The **Dataset Exploration and Preparation** phase has been completed.
-
-The project is progressing into **Model Development and Evaluation**, where multiple deep learning architectures will be developed and compared before final model selection.
+Dataset preparation, model comparison, NIH pretraining, image validation, Grad-CAM and backend testing have been completed. Streamlit integration and final end-to-end verification are ongoing.
