@@ -246,3 +246,30 @@ __marimo__/
 # Operating system files
 .DS_Store
 Thumbs.db
+
+# Additional Exclusions
+# Additional medical and validation image formats
+*.tif
+*.tiff
+*.bmp
+*.webp
+
+# TensorFlow TFRecord datasets
+*.tfrecord
+*.tfrecords
+*.tfrec
+
+# Additional model formats
+*.tflite
+*.onnx
+*.pb
+
+# Local dataset and validation directories
+datasets/
+data/
+validation_data/
+validator_dataset/
+
+# Local experiment artifacts
+logs/
+tensorboard/
