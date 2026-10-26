@@ -155,23 +155,29 @@ Data augmentation will be applied to the **training data only** during the model
 
 ## Repository Structure
 
-The repository originally contained the following files. Confirm the current `notebooks/` contents before adding further experiments or application code.
+The following structure reflects the notebooks uploaded during the October 2026 repository update. Notebook 10 has not been identified, so its number is intentionally unused. Verify filenames against the live repository if any uploads were renamed differently.
 
 ```text
 Insight-Hunters/
-│
 ├── notebooks/
 │   ├── 01_Dataset_Structure_and_Statistics.ipynb
 │   ├── 02_Data_Quality_and_Cleaning.ipynb
 │   ├── 03_Dataset_Splitting.ipynb
-│   └── 04_Data_Preprocessing.ipynb
-│
+│   ├── 04_Data_Preprocessing.ipynb
+│   ├── 05_VGG16_Model_Development.ipynb
+│   ├── 06_ResNet50_Model_Development.ipynb
+│   ├── 07_DenseNet121_Model_Development.ipynb
+│   ├── 08_EfficientNetB0_Model_Development.ipynb
+│   ├── 09_Final_Model_Evaluation_and_Comparison.ipynb
+│   ├── 11_NIH_Domain_Specific_Pretraining.ipynb
+│   ├── 12_GradCAM_Explainability.ipynb
+│   └── 13_Model_Integration_Testing.ipynb
 ├── .gitignore
 ├── README.md
 └── requirements.txt
 ```
 
-Large datasets, generated data splits, model checkpoints and exported models are intentionally excluded from the repository.
+Large datasets, generated data splits, model checkpoints and exported models are intentionally excluded from the repository. The Streamlit application and model inference handover have been developed separately; their presence in this GitHub repository has not yet been verified.
 
 ---
 
@@ -258,11 +264,61 @@ This notebook completed the initial dataset exploration and preparation phase; s
 
 ---
 
+### 05 — VGG16 Model Development
+
+`05_VGG16_Model_Development.ipynb`
+
+Documents the ImageNet-pretrained VGG16 baseline, frozen-backbone training, selective fine-tuning, checkpointing and validation analysis.
+
+### 06 — ResNet50 Model Development
+
+`06_ResNet50_Model_Development.ipynb`
+
+Documents the original ImageNet-pretrained ResNet50 experiment, including its training and fine-tuning stages. This is distinct from the later NIH-pretrained ResNet50.
+
+### 07 — DenseNet121 Model Development
+
+`07_DenseNet121_Model_Development.ipynb`
+
+Documents the standardized DenseNet121 transfer-learning experiment, training configuration, fine-tuning, checkpoints and validation results.
+
+### 08 — EfficientNetB0 Model Development
+
+`08_EfficientNetB0_Model_Development.ipynb`
+
+Documents the standardized EfficientNetB0 transfer-learning experiment, including preprocessing, staged training, checkpoint selection and validation analysis.
+
+### 09 — Final Model Evaluation and Comparison
+
+`09_Final_Model_Evaluation_and_Comparison.ipynb`
+
+Evaluates the four original CNN architectures on the held-out TB test set and records the selection of ImageNet-pretrained ResNet50 for further experimentation. This is a historical selection stage, not the final deployed-model decision.
+
+### 11 — NIH Domain-Specific Pretraining
+
+`11_NIH_Domain_Specific_Pretraining.ipynb`
+
+Documents NIH patient-level splitting, Google Drive data-loading bottlenecks, local Colab image staging, TFRecord development, 14-label chest X-ray pretraining, NIH-to-TB ResNet50 transfer learning and evaluation. The NIH pretraining task is not TB classification.
+
+### 12 — Grad-CAM Explainability
+
+`12_GradCAM_Explainability.ipynb`
+
+Documents Grad-CAM generation and visualization for the ResNet50 TB classifier, including heatmap overlays and exploratory comparisons. Heatmaps do not constitute clinical explanations.
+
+### 13 — Model Integration Testing
+
+`13_Model_Integration_Testing.ipynb`
+
+Documents MobileNetV2 chest-image validation, robustness checks, integration with TB classification and Grad-CAM, controlled inference testing, and the backend handover. The notebook includes intermediate development iterations; the final validated entry point is `run_complete_inference()`.
+
+---
+
 ## Shared Project Storage
 
 Large project files are maintained through the group's shared Google Drive storage rather than GitHub.
 
-The shared project structure is organised as:
+The shared project structure includes (illustrative top-level layout):
 
 ```text
 Insight_Hunters_Project/
@@ -281,6 +337,8 @@ Insight_Hunters_Project/
 ├── 04_Results/
 ├── 05_Exports/
 ├── 06_Notebooks/
+├── 07_App_Integration/
+├── 08_Image_Validation/
 └── requirements.txt
 ```
 
@@ -294,7 +352,7 @@ The project's core Python dependencies are recorded in:
 
 `requirements.txt`
 
-Core libraries currently include:
+The repository's current dependency list includes:
 
 - TensorFlow
 - NumPy
@@ -302,6 +360,8 @@ Core libraries currently include:
 - Matplotlib
 - Pillow
 - Scikit-learn
+- Streamlit
+- OpenCV (`opencv-python-headless`)
 
 To install the required dependencies in a compatible Python environment:
 
@@ -388,7 +448,7 @@ The validator outputs a non-chest score: **below 0.5 accepts**, while **0.5 or a
 
 ### Backend and Application Integration
 
-The unified `tb_model_inference.py` module provides `run_complete_inference(tb_model, validator_model, image_input)` and returns `accepted`, `rejected` or `error`. Only accepted images receive TB classification and Grad-CAM through this validated entry point. Controlled Colab tests covered chest X-rays, hand radiographs, invalid bytes and Streamlit-style uploaded files. **Actual Streamlit integration is still being debugged:** an apparent chest X-ray rejection and a non-chest-image prediction screenshot require investigation. Do not describe the full application as validated.
+The unified `tb_model_inference.py` module provides `run_complete_inference(tb_model, validator_model, image_input, threshold=0.5)` and returns `accepted`, `rejected` or `error`. Only accepted images receive TB classification and Grad-CAM through this validated entry point. Controlled Colab tests covered chest X-rays, hand radiographs, invalid bytes and Streamlit-style uploaded files. **Actual Streamlit integration is still being debugged:** an apparent chest X-ray rejection and a non-chest-image prediction screenshot require investigation. Do not describe the full application as validated.
 
 ## Project Status — October 2026
 
