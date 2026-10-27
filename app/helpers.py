@@ -581,7 +581,9 @@ def info_page():
     )
     st.markdown("##### Selected model: `ResNet50`")
     st.markdown("###### Comparison of all models: ")
-    metric_df = pd.read_csv("four_model_test_comparison.csv")
+    metric_df = pd.read_csv(
+    Path(__file__).resolve().parent / "four_model_test_comparison.csv"
+    )
     st.table(metric_df)
     st.caption("ResNet50 selected based on better overall metrics compared to the other three models")
 
