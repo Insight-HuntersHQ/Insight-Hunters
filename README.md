@@ -10,7 +10,7 @@ This project investigates the application of deep learning techniques to chest X
 
 The project is being developed as a third-year group project by the Insight Hunters team.
 
-The project has completed dataset preparation, four-architecture CNN comparison, NIH-based ResNet50 pretraining, Grad-CAM explainability, MobileNetV2 image validation and controlled backend integration tests. Streamlit end-to-end integration and debugging remain ongoing.
+The project has completed dataset preparation, four-architecture CNN comparison, NIH-based ResNet50 pretraining, Grad-CAM explainability, MobileNetV2 image validation, controlled backend integration tests and team-led Streamlit application testing. The application remains an academic research prototype without clinical validation.
 
 ---
 
@@ -155,7 +155,7 @@ Data augmentation will be applied to the **training data only** during the model
 
 ## Repository Structure
 
-The following structure reflects the notebooks uploaded during the October 2026 repository update. Notebook 10 has not been identified, so its number is intentionally unused. Verify filenames against the live repository if any uploads were renamed differently.
+The following structure reflects the repository files confirmed during the October 2026 GitHub audit. Trained model checkpoints and datasets are stored separately in shared Google Drive storage.
 
 ```text
 Insight-Hunters/
@@ -169,21 +169,29 @@ Insight-Hunters/
 │   ├── 07_DenseNet121_Model_Development.ipynb
 │   ├── 08_EfficientNetB0_Model_Development.ipynb
 │   ├── 09_Final_Model_Evaluation_and_Comparison.ipynb
-│   ├── 11_NIH_Domain_Specific_Pretraining.ipynb
-│   ├── 12_GradCAM_Explainability.ipynb
-│   └── 13_Model_Integration_Testing.ipynb
+│   ├── 10_NIH_Domain_Specific_Pretraining.ipynb
+│   ├── 11_GradCAM_Explainability.ipynb
+│   └── 12_Model_Integration_Testing.ipynb
+├── app/
+│   ├── .gitkeep
+│   ├── README.md
+│   ├── four_model_test_comparison.csv
+│   ├── helpers.py
+│   ├── page_icon.png
+│   ├── tb_dash.py
+│   └── tb_model_inference.py
 ├── .gitignore
 ├── README.md
 └── requirements.txt
 ```
 
-Large datasets, generated data splits, model checkpoints and exported models are intentionally excluded from the repository. The Streamlit application and model inference handover have been developed separately; their presence in this GitHub repository has not yet been verified.
+Large datasets, generated data splits, model checkpoints and exported models are intentionally excluded from the repository. The Streamlit application and validated inference module are included in `app/`; the required model files are stored separately on the team’s shared Google Drive.
 
 ---
 
 ## Notebooks
 
-### 01 — Dataset Structure and Statistics
+### 01 (Dataset Structure and Statistics)
 
 `01_Dataset_Structure_and_Statistics.ipynb`
 
@@ -203,7 +211,7 @@ The notebook includes:
 
 ---
 
-### 02 — Data Quality and Cleaning
+### 02 (Data Quality and Cleaning)
 
 `02_Data_Quality_and_Cleaning.ipynb`
 
@@ -221,7 +229,7 @@ The exact-duplicate analysis detects files with identical binary content and sho
 
 ---
 
-### 03 — Dataset Splitting
+### 03 (Dataset Splitting)
 
 `03_Dataset_Splitting.ipynb`
 
@@ -239,7 +247,7 @@ The notebook includes:
 
 ---
 
-### 04 — Data Preprocessing
+### 04 (Data Preprocessing)
 
 `04_Data_Preprocessing.ipynb`
 
@@ -264,51 +272,51 @@ This notebook completed the initial dataset exploration and preparation phase; s
 
 ---
 
-### 05 — VGG16 Model Development
+### 05 (VGG16 Model Development)
 
 `05_VGG16_Model_Development.ipynb`
 
 Documents the ImageNet-pretrained VGG16 baseline, frozen-backbone training, selective fine-tuning, checkpointing and validation analysis.
 
-### 06 — ResNet50 Model Development
+### 06 (ResNet50 Model Development)
 
 `06_ResNet50_Model_Development.ipynb`
 
 Documents the original ImageNet-pretrained ResNet50 experiment, including its training and fine-tuning stages. This is distinct from the later NIH-pretrained ResNet50.
 
-### 07 — DenseNet121 Model Development
+### 07 (DenseNet121 Model Development)
 
 `07_DenseNet121_Model_Development.ipynb`
 
 Documents the standardized DenseNet121 transfer-learning experiment, training configuration, fine-tuning, checkpoints and validation results.
 
-### 08 — EfficientNetB0 Model Development
+### 08 (EfficientNetB0 Model Development)
 
 `08_EfficientNetB0_Model_Development.ipynb`
 
 Documents the standardized EfficientNetB0 transfer-learning experiment, including preprocessing, staged training, checkpoint selection and validation analysis.
 
-### 09 — Final Model Evaluation and Comparison
+### 09 (Final Model Evaluation and Comparison)
 
 `09_Final_Model_Evaluation_and_Comparison.ipynb`
 
 Evaluates the four original CNN architectures on the held-out TB test set and records the selection of ImageNet-pretrained ResNet50 for further experimentation. This is a historical selection stage, not the final deployed-model decision.
 
-### 11 — NIH Domain-Specific Pretraining
+### 10 (NIH Domain-Specific Pretraining)
 
-`11_NIH_Domain_Specific_Pretraining.ipynb`
+`10_NIH_Domain_Specific_Pretraining.ipynb`
 
 Documents NIH patient-level splitting, Google Drive data-loading bottlenecks, local Colab image staging, TFRecord development, 14-label chest X-ray pretraining, NIH-to-TB ResNet50 transfer learning and evaluation. The NIH pretraining task is not TB classification.
 
-### 12 — Grad-CAM Explainability
+### 11 (Grad-CAM Explainability)
 
-`12_GradCAM_Explainability.ipynb`
+`11_GradCAM_Explainability.ipynb`
 
 Documents Grad-CAM generation and visualization for the ResNet50 TB classifier, including heatmap overlays and exploratory comparisons. Heatmaps do not constitute clinical explanations.
 
-### 13 — Model Integration Testing
+### 12 (Model Integration Testing)
 
-`13_Model_Integration_Testing.ipynb`
+`12_Model_Integration_Testing.ipynb`
 
 Documents MobileNetV2 chest-image validation, robustness checks, integration with TB classification and Grad-CAM, controlled inference testing, and the backend handover. The notebook includes intermediate development iterations; the final validated entry point is `run_complete_inference()`.
 
@@ -362,12 +370,25 @@ The repository's current dependency list includes:
 - Scikit-learn
 - Streamlit
 - OpenCV (`opencv-python-headless`)
+- Plotly
 
 To install the required dependencies in a compatible Python environment:
 
 ```bash
 pip install -r requirements.txt
 ```
+
+### Running the Streamlit Application
+
+The application entry point is `app/tb_dash.py`. Place the two separately stored model files, `nih_tb_final_selected_compat.keras` and `mobilenetv2_validator_best_compact.keras`, directly inside `app/` before launching. See `app/README.md` for details.
+
+From the repository root, run:
+
+```bash
+streamlit run app/tb_dash.py
+```
+
+The model checkpoints are not distributed through GitHub. The team has tested its working application, but a clean installation from a fresh repository clone has not been independently verified.
 
 Google Colab is currently used as the primary notebook environment.
 
@@ -448,9 +469,9 @@ The validator outputs a non-chest score: **below 0.5 accepts**, while **0.5 or a
 
 ### Backend and Application Integration
 
-The unified `tb_model_inference.py` module provides `run_complete_inference(tb_model, validator_model, image_input, threshold=0.5)` and returns `accepted`, `rejected` or `error`. Only accepted images receive TB classification and Grad-CAM through this validated entry point. Controlled Colab tests covered chest X-rays, hand radiographs, invalid bytes and Streamlit-style uploaded files. **Actual Streamlit integration is still being debugged:** an apparent chest X-ray rejection and a non-chest-image prediction screenshot require investigation. Do not describe the full application as validated.
+The unified `tb_model_inference.py` module provides `run_complete_inference(tb_model, validator_model, image_input, threshold=0.5)` and returns `accepted`, `rejected` or `error`. Only accepted images receive TB classification and Grad-CAM through this validated entry point. Controlled Colab tests covered chest X-rays, hand radiographs, invalid bytes and Streamlit-style uploaded files. Subsequently, all four team members reported testing the Streamlit application: chest X-rays were accepted and displayed TB classifications with Grad-CAM overlays, while tested non-chest images were rejected without TB predictions. These are team-reported application test outcomes, not independent verification or clinical validation.
 
-## Project Status — October 2026
+## Project Status (October 2026)
 
 - [x] Dataset exploration, integrity checks, splitting and preprocessing
 - [x] VGG16, ResNet50, DenseNet121 and EfficientNetB0 comparison
@@ -459,8 +480,8 @@ The unified `tb_model_inference.py` module provides `run_complete_inference(tb_m
 - [x] Grad-CAM implementation
 - [x] MobileNetV2 image validator and exploratory robustness testing
 - [x] Unified backend and controlled integration testing
-- [ ] Complete Streamlit integration and resolve upload/validation issues
-- [ ] Final end-to-end application testing
+- [x] Streamlit application integration and resolution of previously observed upload/validation issues (team-reported)
+- [x] Team-led end-to-end application testing (not independent or clinical validation)
 - [ ] Final demonstration and oral presentation (20 November 2026)
 
 ## Limitations
@@ -477,13 +498,13 @@ Third-year group deep learning project.
 
 ### Dataset Exploration and Preparation Responsibilities
 
-- **Dataset Structure and Statistics** — dataset exploration, descriptive statistics and visualisations
-- **Data Quality and Cleaning** — integrity checking, duplicate detection and visual quality inspection
-- **Dataset Splitting** — stratified training, validation and testing split
-- **Project Setup and Integration** — shared project structure, notebooks, dependencies, dataset access, GitHub and preparation-pipeline integration
+- **Dataset Structure and Statistics** : dataset exploration, descriptive statistics and visualisations
+- **Data Quality and Cleaning** : integrity checking, duplicate detection and visual quality inspection
+- **Dataset Splitting** : stratified training, validation and testing split
+- **Project Setup and Integration** : shared project structure, notebooks, dependencies, dataset access, GitHub and preparation-pipeline integration
 
 ---
 
 ## Current Phase
 
-Dataset preparation, model comparison, NIH pretraining, image validation, Grad-CAM and backend testing have been completed. Streamlit integration and final end-to-end verification are ongoing.
+Dataset preparation, model comparison, NIH pretraining, image validation, Grad-CAM, backend integration and team-led Streamlit testing have been completed. The final demonstration and oral presentation are scheduled for 20 November 2026. Independent fresh-install reproduction and clinical validation have not been established.
